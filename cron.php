@@ -37,60 +37,60 @@ $query_nas = "SELECT `nasip` FROM `nas` WHERE nastype='local' or nastype='rscrip
 $queried_nas = $rm_loginDB->query($query_nas) or die('wrong data input: ' . $query_nas);
 // Цикл для беребора NAS
 while($row_nas = mysqli_fetch_assoc($queried_nas)) {
-	$nas = $row_nas['nasip'];
+    $nas = $row_nas['nasip'];
 
-	require ('ipcad_flow_array.php');
+    require ('ipcad_flow_array.php');
 
-	$query_user = "SELECT `users`.`login`,nethosts.ip FROM `users` INNER JOIN nethosts ON users.ip=nethosts.ip INNER JOIN (SELECT `nasip`,`netid` FROM `nas` WHERE `nasip` = '" . $nas  . "') AS t_nas USING (`netid`)";
-	$queried_user = $rm_loginDB->query($query_user) or die('wrong data input: ' . $queried_user);
+    $query_user = "SELECT `users`.`login`,nethosts.ip FROM `users` INNER JOIN nethosts ON users.ip=nethosts.ip INNER JOIN (SELECT `nasip`,`netid` FROM `nas` WHERE `nasip` = '" . $nas  . "') AS t_nas USING (`netid`)";
+    $queried_user = $rm_loginDB->query($query_user) or die('wrong data input: ' . $queried_user);
 
-	while($row = mysqli_fetch_assoc($queried_user)) {
-		$login = $row['login'];
-		$ip = $row['ip'];
-//		if (array_key_exists($ip, $ipcad_flow_array)) {
-			# Полный путь файла RRA
-			$rra = $rra_path . DIRECTORY_SEPARATOR . $login . '.rrd';
-			# Полный путь файла PNG
-			$png = $png_path . DIRECTORY_SEPARATOR . $login . '.png';
-			# Проверяем заполненность данных FLOW-статистики
-			$upload = isset($ipcad_flow_array[$ip]['src']) ? $ipcad_flow_array[$ip]['src'] : '0';
-			$download = isset($ipcad_flow_array[$ip]['dst']) ? $ipcad_flow_array[$ip]['dst'] : '0';
+    while($row = mysqli_fetch_assoc($queried_user)) {
+        $login = $row['login'];
+        $ip = $row['ip'];
+//      if (array_key_exists($ip, $ipcad_flow_array)) {
+            # Полный путь файла RRA
+            $rra = $rra_path . DIRECTORY_SEPARATOR . $login . '.rrd';
+            # Полный путь файла PNG
+            $png = $png_path . DIRECTORY_SEPARATOR . $login . '.png';
+            # Проверяем заполненность данных FLOW-статистики
+            $upload = isset($ipcad_flow_array[$ip]['src']) ? $ipcad_flow_array[$ip]['src'] : '0';
+            $download = isset($ipcad_flow_array[$ip]['dst']) ? $ipcad_flow_array[$ip]['dst'] : '0';
 
-			$downloadTotal += $download;
-			$uploadTotal += $upload;
+            $downloadTotal += $download;
+            $uploadTotal += $upload;
 
-			if (!file_exists($rra)) {
-				$ret = rrd_create($rra, $opts_create);
-					if (! $ret) {
-						$err_create = rrd_error();
-						print "Create error: $err_create\n";
-					}
-			} else {
-				$ret = rrd_update($rra, array("N:$download:$upload"));
-					if (! $ret ) {
-						$err_update = rrd_error();
-						print "Update error: $err_update\n";
-					}
-			}
-//		}
+            if (!file_exists($rra)) {
+                $ret = rrd_create($rra, $opts_create);
+                    if (! $ret) {
+                        $err_create = rrd_error();
+                        print "Create error: $err_create\n";
+                    }
+            } else {
+                $ret = rrd_update($rra, array("N:$download:$upload"));
+                    if (! $ret ) {
+                        $err_update = rrd_error();
+                        print "Update error: $err_update\n";
+                    }
+            }
+//      }
 
-	}
+    }
 
 }
 
 // Create Total rrd
 if (!file_exists($rraTotal)) {
-	$ret = rrd_create($rraTotal, $opts_create);
-		if (! $ret) {
-			$err_create = rrd_error();
-			print "Create error: $err_create\n";
-		}
+    $ret = rrd_create($rraTotal, $opts_create);
+        if (! $ret) {
+            $err_create = rrd_error();
+            print "Create error: $err_create\n";
+        }
 } else {
-	$ret = rrd_update($rraTotal, array("N:$downloadTotal:$uploadTotal"));
-		if (! $ret ) {
-			$err_update = rrd_error();
-			print "Update error: $err_update\n";
-		}
+    $ret = rrd_update($rraTotal, array("N:$downloadTotal:$uploadTotal"));
+        if (! $ret ) {
+            $err_update = rrd_error();
+            print "Update error: $err_update\n";
+        }
 }
 
 if (XHPROF) {
