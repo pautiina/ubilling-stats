@@ -6,7 +6,8 @@ if (!isset($_SERVER['REQUEST_URI'])) {
 require_once('config.php');
 require_once('libs/mysqli.php');
 
-list ($separetor, $ip_range) = explode('/',$_SERVER['REQUEST_URI']);
+//list ($separetor, $ip_range) = explode('/', $_SERVER['REQUEST_URI']);
+$ip_range = preg_replace('/\/+/', '', $_SERVER['REQUEST_URI']);
 //$range = explode('.',$range);
 $ip_range = explode('-', $ip_range);
 $ip = @$ip_range['0'];
@@ -29,7 +30,7 @@ switch ($range) {
     default:
         $time = 36000;
 }
-if (!empty($ip)) {
+if (! empty($ip) and $ip != 'total') {
     $query_user = "SELECT `users`.`login` FROM `users` INNER JOIN (SELECT `nethosts`.`ip` FROM nethosts WHERE nethosts.ip='" . $ip . "') nethosts USING (IP)";
     $queried_user = $rm_loginDB->query($query_user) or die('wrong data input: '.$queried_user);
 
@@ -37,7 +38,10 @@ if (!empty($ip)) {
     while($row = mysqli_fetch_assoc($queried_user)) {
         $login = $row['login'];
     };
+} elseif (! empty($ip) AND $ip == 'total') {
+    $login = 'total';
 }
+
 function LoadErrorPNG($text) {
         putenv('GDFONTPATH=' . realpath('.'));
         /* Создаем пустое изображение */
@@ -49,6 +53,7 @@ function LoadErrorPNG($text) {
         $grey = imagecolorallocate($im, 128, 128, 128);
         $black = imagecolorallocate($im, 0, 0, 0);
 
+        #imagefilledrectangle($im, 0, 0, 600, 300, $bgc);
         imagefilledrectangle($im, 0, 0, 600, 300, $white);
 
         /* Выводим сообщение об ошибке */
