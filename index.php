@@ -39,6 +39,7 @@ if (!empty($ip)) {
     };
 }
 function LoadErrorPNG($text) {
+        putenv('GDFONTPATH=' . realpath('.'));
         /* Создаем пустое изображение */
         $im  = imagecreatetruecolor(600, 300);
         $bgc = imagecolorallocate($im, 255, 255, 255);
