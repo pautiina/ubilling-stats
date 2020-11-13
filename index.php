@@ -30,7 +30,7 @@ switch ($range) {
     default:
         $time = 36000;
 }
-if (! empty($ip) and $ip != 'total') {
+if (! empty($ip) and $ip != 'Total') {
     $query_user = "SELECT `users`.`login` FROM `users` INNER JOIN (SELECT `nethosts`.`ip` FROM nethosts WHERE nethosts.ip='" . $ip . "') nethosts USING (IP)";
     $queried_user = $rm_loginDB->query($query_user) or die('wrong data input: '.$queried_user);
 
@@ -38,7 +38,7 @@ if (! empty($ip) and $ip != 'total') {
     while($row = mysqli_fetch_assoc($queried_user)) {
         $login = $row['login'];
     };
-} elseif (! empty($ip) AND $ip == 'total') {
+} elseif (! empty($ip) AND $ip == 'Total') {
     $login = 'total';
 }
 
